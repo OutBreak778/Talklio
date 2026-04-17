@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "talklio",
+    "name": "Talklio",
     "slug": "talklio",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -38,11 +38,21 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c68f3b4e-e327-4bff-88e0-c0d001726569"
+      }
+    },
+    "owner": "nikhil-mishra"
   }
 }

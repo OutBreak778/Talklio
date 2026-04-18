@@ -3,9 +3,9 @@ import { useNavigation } from "expo-router";
 import React, { useEffect } from "react";
 import { StatusBar, StyleSheet, View } from "react-native";
 import Animated, {
-    useSharedValue,
-    withDelay,
-    withTiming,
+  useSharedValue,
+  withDelay,
+  withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { runOnJS } from "react-native-worklets";

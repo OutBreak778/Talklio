@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_700Bold",
     color: "#1e40af",
     letterSpacing: -1.2,
+    marginLeft: 8,
   },
   imageContainer: {
     alignItems: "center",

@@ -1,11 +1,14 @@
 import { BackButton } from "@/components/back-button";
+import { useAuthStore } from "@/store/authStore";
 import { Image } from "expo-image";
-import { useNavigation } from "expo-router";
-import { useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
+import { Eye, EyeOff } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -22,14 +25,48 @@ import {
 const SignIn = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+  const router = useRouter();
+  const { login, isAuthenticated, isLoading } = useAuthStore();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
-  // Main sign-in form
+  // Redirect if already authenticated (works on mount + after login)
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/(root)/(tabs)/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
+  const isEmailValid = emailAddress.includes("@") && emailAddress.length > 5;
+  const isFormValid = isEmailValid && password.length >= 6;
+
+  const handleSignIn = async () => {
+    if (!isFormValid) {
+      Alert.alert(
+        "Invalid Input",
+        "Please enter a valid email and password (min 6 characters)",
+      );
+      return;
+    }
+
+    try {
+      await login(emailAddress.trim(), password);
+      // No need to navigate manually here — the useEffect above will handle it
+    } catch (err: any) {
+      console.log("Login Error:", err);
+      // Optional: Show error message from backend
+      Alert.alert(
+        "Login Failed",
+        err?.message || "Something went wrong. Please try again.",
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -43,13 +80,12 @@ const SignIn = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-            {/* Branding */}
             <BackButton />
             <View style={styles.brandBlock}>
               <View style={styles.logoWrap}>
                 <Image
                   source={require("@/assets/images/icons.png")}
-                  style={[styles.logo]}
+                  style={styles.logo}
                   resizeMode="contain"
                 />
                 <View>
@@ -63,13 +99,13 @@ const SignIn = () => {
               </Text>
             </View>
 
-            {/* Sign-In Form */}
             <View style={styles.card}>
               <View style={styles.form}>
+                {/* Email Field */}
                 <View style={styles.field}>
                   <Text style={styles.label}>Email Address</Text>
                   <TextInput
-                    style={[styles.input]}
+                    style={styles.input}
                     autoCapitalize="none"
                     value={emailAddress}
                     placeholder="name@example.com"
@@ -81,27 +117,56 @@ const SignIn = () => {
                   />
                 </View>
 
+                {/* Password Field with Eye Button */}
                 <View style={styles.field}>
                   <Text style={styles.label}>Password</Text>
-                  <TextInput
-                    style={[styles.input]}
-                    value={password}
-                    placeholder="Enter your password"
-                    placeholderTextColor="rgba(0,0,0,0.4)"
-                    secureTextEntry
-                    onChangeText={setPassword}
-                    onBlur={() => setPasswordTouched(true)}
-                    autoComplete="password"
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      value={password}
+                      placeholder="Enter your password"
+                      placeholderTextColor="rgba(0,0,0,0.4)"
+                      secureTextEntry={!passwordVisible}
+                      onChangeText={setPassword}
+                      onBlur={() => setPasswordTouched(true)}
+                      autoComplete="password"
+                    />
+
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setPasswordVisible(!passwordVisible)}
+                    >
+                      {passwordVisible ? (
+                        <EyeOff size={22} color="#999999a3" />
+                      ) : (
+                        <Eye size={22} color="#999999a3" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
-                <Pressable style={[styles.button, styles.buttonDisabled]}>
-                  <Text style={styles.buttonText}>Sign In</Text>
-                </Pressable>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    (!isFormValid || isLoading) && styles.buttonDisabled,
+                  ]}
+                  onPress={handleSignIn}
+                  disabled={!isFormValid || isLoading}
+                >
+                  <Text style={styles.buttonText}>
+                    {isLoading ? (
+                      <View style={{ flexDirection: "row", gap: 8 }}>
+                        <ActivityIndicator size="small" color="#fff" />
+                        <Text style={{ color: "#fff" }}>Signing in</Text>
+                      </View>
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
 
-            {/* Sign-Up Link */}
             <View style={styles.linkRow}>
               <Text style={styles.linkCopy}>Don't have an account?</Text>
               <TouchableOpacity
@@ -148,6 +213,10 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
+  inputContainer: {
+    position: "relative",
+    width: "100%",
+  },
   logoMark: {
     width: 40,
     height: 40,
@@ -178,6 +247,12 @@ const styles = StyleSheet.create({
     color: "#1c1c1c",
     letterSpacing: -0.5,
   },
+  eyeButton: {
+    position: "absolute",
+    right: 12,
+    padding: 8,
+    marginTop: 6,
+  },
   subtitle: {
     fontSize: 15,
     color: "#666",
@@ -203,14 +278,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   input: {
-    height: 48,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: "#e0e0e0",
+    width: "100%", // Full width input
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingRight: 50, // Extra space for eye icon
+    fontSize: 16,
     backgroundColor: "#fff",
-    paddingHorizontal: 14,
-    fontSize: 15,
-    color: "#1c1c1c",
   },
   inputError: {
     borderColor: "#e53935",

@@ -1,129 +1,212 @@
 import { BackButton } from "@/components/back-button";
+import { useAuthStore } from "@/store/authStore";
 import { Image } from "expo-image";
-import { Link, useNavigation } from "expo-router";
-import { useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
+import { Eye, EyeOff } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import {
-    SafeAreaView,
-    useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const SignUp = () => {
-  const insets = useSafeAreaInsets();
+  const router = useRouter();
   const navigation = useNavigation<any>();
+  const { register, isAuthenticated, isLoading } = useAuthStore();
 
-  const [username, setUsername] = useState("");
-  const [emailAddress, setEmailAddress] = useState("");
-  const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
 
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+  });
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/(root)/(tabs)/dashboard");
+    }
+  }, [isAuthenticated]);
+
+  // ✅ Validation
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+  const isPasswordValid = form.password.length >= 6;
+  const isNameValid = form.fullName.trim().length > 2;
+
+  const isFormValid = isEmailValid && isPasswordValid && isNameValid;
+
+  // ✅ Register
+  const handleSignUp = async () => {
+    try {
+      const res: any = await register(form.fullName, form.email, form.password);
+
+      if (res?.data?.requiresVerification) {
+        router.push({
+          pathname: "/(auth)/verify-otp",
+          params: { email: form.email },
+        });
+      }
+    } catch (error: any) {
+      const status = error?.response?.status;
+
+      if (status === 409) {
+        Alert.alert(
+          "Account Exists",
+          "This email is already registered. Please login.",
+        );
+        router.replace("/(auth)/sign-in");
+      } else {
+        Alert.alert("Error", "Registration failed. Try again.");
+      }
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.screen}
       >
         <ScrollView
-          style={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-            {/* Branding */}
             <BackButton />
+
+            {/* Branding */}
             <View style={styles.brandBlock}>
               <View style={styles.logoWrap}>
                 <Image
                   source={require("@/assets/images/icons.png")}
-                  style={[styles.logo]}
-                  resizeMode="contain"
+                  style={styles.logo}
                 />
                 <View>
                   <Text style={styles.wordmark}>Talklio</Text>
                   <Text style={styles.wordmarkSub}>MESSAGING</Text>
                 </View>
               </View>
-              <Text style={styles.title}>Welcome back</Text>
-              <Text style={styles.subtitle}>
-                Sign up to continue your conversations
-              </Text>
+
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.subtitle}>Start your conversations now</Text>
             </View>
 
-            {/* Sign-In Form */}
+            {/* Form */}
             <View style={styles.card}>
               <View style={styles.form}>
+                {/* Username */}
                 <View style={styles.field}>
                   <Text style={styles.label}>User Name</Text>
                   <TextInput
-                    style={[styles.input]}
-                    autoCapitalize="none"
-                    value={username}
-                    placeholder="Jhon Doe"
-                    placeholderTextColor="rgba(0,0,0,0.4)"
-                    onChangeText={setUsername}
+                    style={styles.input}
+                    value={form.fullName}
+                    placeholder="John Doe"
+                    onChangeText={(text) =>
+                      setForm((prev) => ({ ...prev, fullName: text }))
+                    }
                   />
                 </View>
 
+                {/* Email */}
                 <View style={styles.field}>
-                  <Text style={styles.label}>Email Address</Text>
+                  <Text style={styles.label}>Email</Text>
                   <TextInput
-                    style={[styles.input]}
-                    autoCapitalize="none"
-                    value={emailAddress}
-                    placeholder="name@example.com"
-                    placeholderTextColor="rgba(0,0,0,0.4)"
-                    onChangeText={setEmailAddress}
-                    onBlur={() => setEmailTouched(true)}
+                    style={[
+                      styles.input,
+                      touched.email && !isEmailValid && styles.inputError,
+                    ]}
+                    value={form.email}
                     keyboardType="email-address"
-                    autoComplete="email"
+                    autoCapitalize="none"
+                    placeholder="example@gmail.com"
+                    onBlur={() =>
+                      setTouched((prev) => ({ ...prev, email: true }))
+                    }
+                    onChangeText={(text) =>
+                      setForm((prev) => ({ ...prev, email: text }))
+                    }
                   />
                 </View>
 
                 <View style={styles.field}>
                   <Text style={styles.label}>Password</Text>
-                  <TextInput
-                    style={[styles.input]}
-                    value={password}
-                    placeholder="Enter your password"
-                    placeholderTextColor="rgba(0,0,0,0.4)"
-                    secureTextEntry
-                    onChangeText={setPassword}
-                    onBlur={() => setPasswordTouched(true)}
-                    autoComplete="password"
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        touched.password &&
+                          !isPasswordValid &&
+                          styles.inputError,
+                      ]}
+                      value={form.password}
+                      placeholder="*********"
+                      secureTextEntry={!passwordVisible}
+                      onBlur={() =>
+                        setTouched((prev) => ({ ...prev, password: true }))
+                      }
+                      onChangeText={(text) =>
+                        setForm((prev) => ({ ...prev, password: text }))
+                      }
+                    />
+
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setPasswordVisible(!passwordVisible)}
+                    >
+                      {passwordVisible ? (
+                        <EyeOff size={22} color="#999999a3" />
+                      ) : (
+                        <Eye size={22} color="#999999a3" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
-                <Pressable style={[styles.button, styles.buttonDisabled]}>
-                  <Text style={styles.buttonText}>Sign in</Text>
-                </Pressable>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    (!isFormValid || isLoading) && styles.buttonDisabled,
+                  ]}
+                  disabled={!isFormValid || isLoading}
+                  onPress={handleSignUp}
+                >
+                  {isLoading ? (
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <ActivityIndicator size="small" color="#fff" />
+                      <Text style={{ color: "#fff" }}>Signing Up</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.buttonText}>Sign Up</Text>
+                  )}
+                </TouchableOpacity>
               </View>
             </View>
 
-            {/* Sign-Up Link */}
+            {/* Link */}
             <View style={styles.linkRow}>
               <Text style={styles.linkCopy}>Already have an account?</Text>
-              <Link href="/(auth)/sign-in" asChild>
-                <TouchableOpacity
-                  onPress={() => navigation.replace("(auth)/sign-in")}
-                >
-                  <Text style={styles.link}>Sign In</Text>
-                </TouchableOpacity>
-              </Link>
+              <TouchableOpacity
+                onPress={() => navigation.replace("(auth)/sign-in")}
+              >
+                <Text style={styles.link}>Sign In</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -164,6 +247,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 12,
     marginBottom: 16,
+  },
+  inputContainer: {
+    position: "relative",
+    width: "100%",
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 12,
+    padding: 8,
+    marginTop: 6,
   },
   logoMark: {
     width: 40,

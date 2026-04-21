@@ -1,25 +1,31 @@
+import { useAuthStore } from "@/store/authStore";
 import {
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { useFonts } from "expo-font";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation } from "expo-router";
-import React from "react";
+import { useNavigation, useRouter } from "expo-router";
+import React, { useEffect } from "react";
 import {
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const WelcomeScreen = () => {
   const insets = useSafeAreaInsets();
   const navigate = useNavigation<any>();
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuthStore();
 
   const [fontsLoaded] = useFonts({
     Poppins_500Medium,
@@ -27,8 +33,14 @@ const WelcomeScreen = () => {
     Poppins_700Bold,
   });
 
-  const navigateToDashboard = () => {
-    navigate.navigate("(auth)/sign-in");
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      router.replace("/(root)/(tabs)/dashboard"); // ← Correct path
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  const navigateToSignIn = () => {
+    router.navigate("/(auth)/sign-in");
   };
 
   if (!fontsLoaded) return null;
@@ -41,15 +53,16 @@ const WelcomeScreen = () => {
         translucent
       />
 
-      {/* Elegant Soft Gradient Background */}
+      {/* Full-screen Elegant Gradient Background */}
       <LinearGradient
         colors={["#bae5fd5f", "#fff", "#f4d9c721", "#7dd4fc8c"]}
         start={{ x: 0.0, y: 0.0 }}
         end={{ x: 0.8, y: 1.0 }}
         style={StyleSheet.absoluteFillObject}
       />
-      <View style={styles.content}>
-        {/* Classic Modern Header */}
+
+      <View style={styles.mainContent}>
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Your space for</Text>
           <View style={styles.appNameContainer}>
@@ -61,6 +74,8 @@ const WelcomeScreen = () => {
             <Text style={styles.appName}>Talklio</Text>
           </View>
         </View>
+
+        {/* Responsive Illustration */}
         <View style={styles.imageContainer}>
           <Image
             source={require("@/assets/images/welcome-1-removebg-preview.png")}
@@ -69,19 +84,22 @@ const WelcomeScreen = () => {
           />
         </View>
       </View>
-      <View style={styles.bottomContainer}>
-        <View>
-          <Text style={styles.bottomTitle}>Connect instantly, anytime.</Text>
-        </View>
+
+      {/* Bottom Section - Always at safe bottom */}
+      <View
+        style={[styles.bottomContainer, { paddingBottom: insets.bottom + 20 }]}
+      >
+        <Text style={styles.bottomTitle}>Connect instantly, anytime.</Text>
 
         <Text style={styles.bottomDescription}>
           Stay close with friends and family through messages, voice calls, and
-          video{"\n"} fast and secure.
+          video — fast and secure.
         </Text>
 
         <TouchableOpacity
-          onPress={navigateToDashboard}
+          onPress={navigateToSignIn}
           style={styles.mainButton}
+          activeOpacity={0.85}
         >
           <Text style={styles.mainButtonText}>Get Started</Text>
         </TouchableOpacity>
@@ -95,58 +113,71 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  content: {
+
+  mainContent: {
+    flex: 1,
     paddingHorizontal: 32,
+    justifyContent: "center", // Centers content vertically when possible
   },
+
   header: {
-    alignItems: "flex-start",
-    marginTop: 20, // 👈 pulls header closer to image
+    alignItems: "flex-start", // Changed to center for better balance
+    marginBottom: 20,
   },
+
   title: {
-    fontSize: 27,
+    fontSize: 26,
     fontFamily: "Poppins_500Medium",
     color: "#475569",
     textAlign: "center",
   },
+
   appNameContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: -18,
+    marginTop: -12, // Reduced negative margin
   },
+
   logo: {
-    width: 58,
-    height: 58,
+    width: 48,
+    height: 48,
   },
+
   appName: {
-    fontSize: 45,
+    fontSize: 44,
     fontFamily: "Poppins_700Bold",
     color: "#1e40af",
-    letterSpacing: -1.2,
+    letterSpacing: -1.1,
     marginLeft: 8,
   },
+
   imageContainer: {
     alignItems: "center",
     justifyContent: "center",
+    flex: 1, // Allows image to take available space
+    marginVertical: 20,
   },
 
   pattern: {
-    width: "120%",
-    height: 400,
+    width: "100%",
+    maxWidth: 420, // Prevents it from becoming too wide on tablets/large phones
+    height: undefined,
+    aspectRatio: 0.7, // Adjust this based on your image's actual aspect ratio
+    maxHeight: SCREEN_HEIGHT * 1, // Limits height to ~42% of screen
   },
+
   bottomContainer: {
-    position: "absolute",
-    bottom: 90,
-    left: 0,
-    right: 0,
     paddingHorizontal: 32,
+    alignItems: "center",
   },
 
   bottomTitle: {
-    fontSize: 32,
+    fontSize: 31,
     fontFamily: "Poppins_700Bold",
     color: "#0f172a",
     textAlign: "center",
-    marginBottom: 8,
+    lineHeight: 36,
+    marginBottom: 12,
   },
 
   bottomDescription: {
@@ -154,21 +185,23 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_500Medium",
     color: "#64748b",
     textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 20,
+    lineHeight: 23,
+    marginBottom: 28,
   },
 
   mainButton: {
     backgroundColor: "#0ea5e9",
     paddingVertical: 18,
+    paddingHorizontal: 60,
     borderRadius: 16,
     alignItems: "center",
     shadowColor: "#0ea5e9",
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
-    marginTop: 20,
+    shadowOpacity: 0.32,
+    shadowRadius: 18,
+    elevation: 12,
+    width: "100%",
+    maxWidth: 360,
   },
 
   mainButtonText: {

@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 54,
     fontWeight: "700",
-    color: "#1e40af",
+    color: "#262628",
   },
 });
 

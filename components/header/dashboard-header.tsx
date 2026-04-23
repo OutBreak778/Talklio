@@ -1,10 +1,15 @@
 import Fonts from "@/utils/constants";
 import { Image } from "expo-image";
-import { Search } from "lucide-react-native";
+import { BellDot } from "lucide-react-native";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-const Header = () => {
+import { useRouter } from "expo-router";
+import { TouchableOpacity } from "react-native";
+
+const DashboardHeader = () => {
+  const router = useRouter();
+
   return (
     <View style={styles.header}>
       {/* LEFT: Profile + Name */}
@@ -18,16 +23,28 @@ const Header = () => {
         </Text>
       </View>
 
-      {/* RIGHT: Search */}
-      <View style={styles.right}>
-        {/* <View style={styles.searchIcon} /> */}
-        <Search size={20} />
-      </View>
+      {/* RIGHT: Notification Bell */}
+      <TouchableOpacity
+        activeOpacity={0.6} // 👈 gives slight fade (NOT full white flash)
+        onPress={() => router.navigate("/(root)/notification")}
+        style={{
+          width: 50,
+          height: 50,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
+          borderRadius: 50,
+          borderRightWidth: 0.4,
+          borderRightColor: "#99999972",
+        }}
+      >
+        <BellDot size={22} />
+      </TouchableOpacity>
     </View>
   );
 };
 
-export default Header;
+export default DashboardHeader;
 
 const styles = StyleSheet.create({
   header: {
@@ -43,10 +60,7 @@ const styles = StyleSheet.create({
     gap: 10,
     borderWidth: 1,
     borderColor: "#bbbbbb28",
-    borderTopLeftRadius: 50,
-    borderBottomLeftRadius: 50,
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 10,
+    borderRadius: 50,
     paddingRight: 6,
   },
 
@@ -58,9 +72,9 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 26,
-    marginTop: 8,
     lineHeight: 40,
     fontWeight: "600",
+    marginRight: 10,
   },
 
   // placeholders

@@ -24,6 +24,7 @@ function AnimatedTabBar({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
   const [tabWidths, setTabWidths] = useState<number[]>([]);
   const [tabOffsets, setTabOffsets] = useState<number[]>([]);
+  const longPressTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const PILL_WIDTH = Math.min(tabWidths[state.index] * 0.85, 80);
 
@@ -93,6 +94,25 @@ function AnimatedTabBar({ state, navigation }: any) {
     });
   };
 
+  const handlePressIn = (tabName: string) => {
+    longPressTimeout.current = setTimeout(() => {
+      // On long press, navigate to the tab
+      navigation.navigate(tabName);
+    }, 500); // 500ms long press delay
+  };
+
+  const handlePressOut = () => {
+    if (longPressTimeout.current) {
+      clearTimeout(longPressTimeout.current);
+      longPressTimeout.current = null;
+    }
+  };
+
+  const handlePress = (tabName: string) => {
+    // Normal tap navigation
+    navigation.navigate(tabName);
+  };
+
   return (
     <View
       style={{
@@ -122,7 +142,7 @@ function AnimatedTabBar({ state, navigation }: any) {
           height: 45,
           marginBottom: 1,
           borderRadius: 30,
-          overflow: "hidden", // 👈 important for liquid look
+          overflow: "hidden",
           transform: [
             { translateX: pillX },
             { scaleX: pillScaleX },
@@ -176,13 +196,15 @@ function AnimatedTabBar({ state, navigation }: any) {
           <Pressable
             key={tab.name}
             onLayout={handleLayout(index)}
-            onPress={() => navigation.navigate(tab.name)}
+            onPress={() => handlePress(tab.name)}
+            onPressIn={() => handlePressIn(tab.name)}
+            onPressOut={handlePressOut}
             style={{
               flex: 1,
               alignItems: "center",
               justifyContent: "center",
               height: "100%",
-              paddingHorizontal: 16, // 👈 controls inner spacing
+              paddingHorizontal: 16,
             }}
           >
             <Image

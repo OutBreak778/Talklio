@@ -1,7 +1,8 @@
-import Header from "@/components/header";
+import DashboardHeader from "@/components/header/dashboard-header";
 import Fonts from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
 import {
+  CheckCheck,
   CircleCheckBig,
   MessageCircleMore,
   MessagesSquareIcon,
@@ -40,7 +41,7 @@ export default function dashboard() {
         style={StyleSheet.absoluteFillObject}
       />
 
-      <Header />
+      <DashboardHeader />
 
       <ScrollView
         style={styles.scrollView}
@@ -476,7 +477,7 @@ export default function dashboard() {
                     gap: 6,
                     alignItems: "center",
                     marginBottom: 6,
-                    backgroundColor: "#ded3fb",
+                    backgroundColor: "#c8e2ff",
                     padding: 10,
                     borderRadius: 22,
                   }}
@@ -571,7 +572,7 @@ export default function dashboard() {
                 {
                   id: "1",
                   name: "Rahul Sharma",
-                  message: "Hey, did you check the latest design?",
+                  message: "Hey, did you check the design?",
                   time: "9:00 AM",
                   unread: 2,
                   src: require("@/assets/images/image-1.jpg"),
@@ -605,36 +606,63 @@ export default function dashboard() {
               scrollEnabled={false} // Important: disable scrolling inside ScrollView
               renderItem={({ item }) => (
                 <View style={styles.chatItem}>
-                  {/* Avatar */}
                   <View style={styles.chatAvatar}>
-                    <Image
-                      source={item.src}
-                      style={{ width: 48, height: 48 }}
-                    />
+                    <Image source={item.src} style={styles.avatarImage} />
+                    {item.unread > 0 && <View style={styles.activeDot} />}
                   </View>
 
                   {/* Chat Info */}
                   <View style={styles.chatInfo}>
                     <View style={styles.chatHeader}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          gap: 8,
-                          alignItems: "center",
-                        }}
+                      <Text
+                        style={[
+                          styles.chatName,
+                          { fontFamily: Fonts.figtree.semibold },
+                        ]}
                       >
-                        <Text style={styles.chatName}>{item.name}</Text>
-                        {item.unread > 0 && (
-                          <View style={styles.unreadBadge}>
-                            <Text style={styles.unreadText}>{item.unread}</Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text style={styles.chatTime}>{item.time}</Text>
+                        {item.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.chatTime,
+                          { fontFamily: Fonts.figtree.regular },
+                        ]}
+                      >
+                        {item.time}
+                      </Text>
                     </View>
-                    <Text style={styles.chatMessage} numberOfLines={1}>
-                      {item.message}
-                    </Text>
+
+                    <View style={styles.messageRow}>
+                      <View style={styles.messageLeft}>
+                        <CheckCheck
+                          size={16}
+                          color={"#888"}
+                          style={styles.doubleCheck}
+                        />
+                        <Text
+                          style={[
+                            styles.chatMessage,
+                            { fontFamily: Fonts.figtree.regular },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {item.message}
+                        </Text>
+                      </View>
+
+                      {item.unread > 0 && (
+                        <View style={styles.unreadBadge}>
+                          <Text
+                            style={[
+                              styles.unreadText,
+                              { fontFamily: Fonts.figtree.semibold },
+                            ]}
+                          >
+                            {item.unread}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
                 </View>
               )}
@@ -698,7 +726,7 @@ const styles = StyleSheet.create({
     flex: 1, // Makes each box fill its container
   },
   leftGrid: {
-    backgroundColor: "#ded3fd",
+    backgroundColor: "#c0deff",
     flex: 1,
     borderRadius: 30,
   },
@@ -712,7 +740,35 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 30,
   },
-
+  avatarImage: {
+    width: 56,
+    height: 56,
+  },
+  activeDot: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#10b981",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  // Message Row
+  messageRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  messageLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  doubleCheck: {
+    marginRight: 6,
+  },
   // 3. Two Column Boxes
   twoColumnContainer: {
     flexDirection: "row",
@@ -758,6 +814,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 8,
   },
   seeAll: {
     color: "#38393a65",

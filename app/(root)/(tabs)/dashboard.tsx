@@ -1,6 +1,7 @@
 import DashboardHeader from "@/components/header/dashboard-header";
 import Fonts from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import {
   CheckCheck,
   CircleCheckBig,
@@ -14,6 +15,7 @@ import React from "react";
 import {
   FlatList,
   Image,
+  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -25,6 +27,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function dashboard() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const openChatRoom = (chatId: string, chatName: string) => {
+    // Navigate to the full-screen chat room (outside tabs)
+    router.push({
+      pathname: "/(root)/[chat]",
+      params: {
+        chat: chatId,
+        chatName: chatName,
+      },
+    });
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -605,66 +618,75 @@ export default function dashboard() {
               keyExtractor={(item) => item.id}
               scrollEnabled={false} // Important: disable scrolling inside ScrollView
               renderItem={({ item }) => (
-                <View style={styles.chatItem}>
-                  <View style={styles.chatAvatar}>
-                    <Image source={item.src} style={styles.avatarImage} />
-                    {item.unread > 0 && <View style={styles.activeDot} />}
-                  </View>
-
-                  {/* Chat Info */}
-                  <View style={styles.chatInfo}>
-                    <View style={styles.chatHeader}>
-                      <Text
-                        style={[
-                          styles.chatName,
-                          { fontFamily: Fonts.figtree.semibold },
-                        ]}
-                      >
-                        {item.name}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.chatTime,
-                          { fontFamily: Fonts.figtree.regular },
-                        ]}
-                      >
-                        {item.time}
-                      </Text>
+                <Pressable
+                  key={item.id}
+                  style={({ pressed }) => [
+                    styles.chatItem,
+                    pressed && styles.chatItemPressed,
+                  ]}
+                  onPress={() => openChatRoom(item.id, item.name)}
+                >
+                  <View style={styles.chatItem}>
+                    <View style={styles.chatAvatar}>
+                      <Image source={item.src} style={styles.avatarImage} />
+                      {item.unread > 0 && <View style={styles.activeDot} />}
                     </View>
 
-                    <View style={styles.messageRow}>
-                      <View style={styles.messageLeft}>
-                        <CheckCheck
-                          size={16}
-                          color={"#888"}
-                          style={styles.doubleCheck}
-                        />
+                    {/* Chat Info */}
+                    <View style={styles.chatInfo}>
+                      <View style={styles.chatHeader}>
                         <Text
                           style={[
-                            styles.chatMessage,
+                            styles.chatName,
+                            { fontFamily: Fonts.figtree.semibold },
+                          ]}
+                        >
+                          {item.name}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.chatTime,
                             { fontFamily: Fonts.figtree.regular },
                           ]}
-                          numberOfLines={1}
                         >
-                          {item.message}
+                          {item.time}
                         </Text>
                       </View>
 
-                      {item.unread > 0 && (
-                        <View style={styles.unreadBadge}>
+                      <View style={styles.messageRow}>
+                        <View style={styles.messageLeft}>
+                          <CheckCheck
+                            size={16}
+                            color={"#888"}
+                            style={styles.doubleCheck}
+                          />
                           <Text
                             style={[
-                              styles.unreadText,
-                              { fontFamily: Fonts.figtree.semibold },
+                              styles.chatMessage,
+                              { fontFamily: Fonts.figtree.regular },
                             ]}
+                            numberOfLines={1}
                           >
-                            {item.unread}
+                            {item.message}
                           </Text>
                         </View>
-                      )}
+
+                        {item.unread > 0 && (
+                          <View style={styles.unreadBadge}>
+                            <Text
+                              style={[
+                                styles.unreadText,
+                                { fontFamily: Fonts.figtree.semibold },
+                              ]}
+                            >
+                              {item.unread}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
+                </Pressable>
               )}
             />
           </View>
@@ -830,7 +852,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff",
-    padding: 14,
+    padding: 8,
     borderRadius: 14,
     marginBottom: 10,
     shadowColor: "#000000b1",
@@ -923,5 +945,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666666",
     lineHeight: 20,
+  },
+  chatItemPressed: {
+    backgroundColor: "#fff",
+    transform: [{ scale: 0.98 }],
   },
 });

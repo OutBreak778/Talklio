@@ -1,4 +1,5 @@
 import SettingHeader from "@/components/header/settings-header";
+import { disconnectSocket } from "@/socket/socket";
 import { useAuthStore } from "@/store/authStore";
 import Fonts from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
@@ -244,6 +245,7 @@ export default function Settings() {
         style: "destructive",
         onPress: async () => {
           await logout();
+          disconnectSocket();
           navigation.replace("welcome");
         },
       },

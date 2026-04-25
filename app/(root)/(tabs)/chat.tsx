@@ -1,7 +1,8 @@
 import ChipsList, { Chip } from "@/components/chat-chip-list";
 import ChatHeader from "@/components/header/chat-header";
-import Fonts from "@/utils/constants";
+import Fonts, { chatData } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import {
   Archive,
   CheckCheck,
@@ -24,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Chat() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
@@ -61,94 +63,21 @@ export default function Chat() {
     },
   ];
 
-  const chatData = [
-    {
-      id: "1",
-      name: "Rahul Sharma",
-      message: "Hey, did you check the latest design?",
-      time: "9:00 AM",
-      unread: 2,
-      src: require("@/assets/images/image-1.jpg"),
-    },
-    {
-      id: "2",
-      name: "Priya Patel",
-      message: "Meeting rescheduled to 4 PM",
-      time: "9:00 AM",
-      unread: 0,
-      src: require("@/assets/images/image-2.jpg"),
-    },
-    {
-      id: "3",
-      name: "Amit Kumar",
-      message: "Can you share the report?",
-      time: "9:00 AM",
-      unread: 1,
-      src: require("@/assets/images/image-3.jpg"),
-    },
-    {
-      id: "4",
-      name: "Sneha Gupta",
-      message: "Thanks for the update!",
-      time: "9:00 AM",
-      unread: 0,
-      src: require("@/assets/images/images.png"),
-    },
-    {
-      id: "5",
-      name: "Rahul Sharma",
-      message: "Hey, did you check the latest design?",
-      time: "9:00 AM",
-      unread: 2,
-      src: require("@/assets/images/image-1.jpg"),
-    },
-    {
-      id: "6",
-      name: "Priya Patel",
-      message: "Meeting rescheduled to 4 PM",
-      time: "9:00 AM",
-      unread: 0,
-      src: require("@/assets/images/image-2.jpg"),
-    },
-    {
-      id: "7",
-      name: "Amit Kumar",
-      message: "Can you share the report?",
-      time: "9:00 AM",
-      unread: 1,
-      src: require("@/assets/images/image-3.jpg"),
-    },
-    {
-      id: "8",
-      name: "Sneha Gupta",
-      message: "Thanks for the update!",
-      time: "9:00 AM",
-      unread: 0,
-      src: require("@/assets/images/images.png"),
-    },
-    {
-      id: "9",
-      name: "Amit Kumar",
-      message: "Can you share the report?",
-      time: "9:00 AM",
-      unread: 1,
-      src: require("@/assets/images/image-3.jpg"),
-    },
-    {
-      id: "10",
-      name: "Sneha Gupta",
-      message: "Thanks for the update!",
-      time: "9:00 AM",
-      unread: 0,
-      src: require("@/assets/images/images.png"),
-    },
-  ];
-
   const handleChipPress = (chip: Chip): void => {
     console.log("Selected chip:", chip);
     setActiveFilter(chip.label.toLowerCase());
   };
 
+  const openChatRoom = (chatId: string, chatName: string) => {
+    // Navigate to the full-screen chat room (outside tabs)
+    router.push({
+      pathname: "/(root)/[chat]",
+      params: {
+        chat: chatId,
+        chatName: chatName,
+      },
+    });
+  };
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar
@@ -201,6 +130,7 @@ export default function Chat() {
                   styles.chatItem,
                   pressed && styles.chatItemPressed,
                 ]}
+                onPress={() => openChatRoom(item.id, item.name)}
               >
                 <View style={styles.chatAvatar}>
                   <Image source={item.src} style={styles.avatarImage} />

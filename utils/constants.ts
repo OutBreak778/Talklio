@@ -108,19 +108,19 @@ export const chatData = [
   },
   {
     id: "9",
-    name: "Sneha Gupta",
-    message: "Thanks for the update!",
-    time: "9:00 AM",
-    unread: 0,
-    src: require("@/assets/images/images.png"),
-  },
-  {
-    id: "10",
     name: "Amit Kumar",
     message: "Can you share the report?",
     time: "9:00 AM",
     unread: 1,
     src: require("@/assets/images/image-3.jpg"),
+  },
+  {
+    id: "10",
+    name: "Sneha Gupta",
+    message: "Thanks for the update!",
+    time: "9:00 AM",
+    unread: 0,
+    src: require("@/assets/images/images.png"),
   },
 ];
 

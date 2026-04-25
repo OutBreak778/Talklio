@@ -1,4 +1,5 @@
 import { BackButton } from "@/components/back-button";
+import { connectSocket } from "@/socket/socket";
 import { useAuthStore } from "@/store/authStore";
 import { Image } from "expo-image";
 import { useNavigation, useRouter } from "expo-router";
@@ -56,6 +57,7 @@ const SignIn = () => {
 
     try {
       await login(emailAddress.trim(), password);
+      await connectSocket();
       // No need to navigate manually here — the useEffect above will handle it
     } catch (err: any) {
       console.log("Login Error:", err);

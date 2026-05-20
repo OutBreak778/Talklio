@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export const ChipsList = ({ chips, onChipPress, initialActiveChip }: any) => {
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     borderWidth: 1,
     borderColor: "#e0e0e0",
-    gap: 4,
+    gap: 12,
     height: 40, // Fixed height for chip
   },
   chipActive: {

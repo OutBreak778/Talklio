@@ -1,18 +1,20 @@
 import Fonts from "@/utils/constants";
-import { Trash2Icon } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { ChevronLeft, Trash2Icon } from "lucide-react-native";
 import React, { useRef } from "react";
 import {
-    Alert,
-    Animated,
-    Pressable,
-    TextInput as RNTextInput,
-    StyleSheet,
-    Text,
-    View,
+  Alert,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const NotificationHeader = ({ unreadCount }: any) => {
-  const inputRef = useRef<RNTextInput>(null);
+  const router = useRouter();
+
   const chatTranslateX = useRef(new Animated.Value(0)).current;
   const chatOpacity = useRef(new Animated.Value(1)).current;
 
@@ -38,9 +40,14 @@ const NotificationHeader = ({ unreadCount }: any) => {
       ],
     );
   };
+
   return (
     <View style={styles.header}>
       {/* LEFT: Profile + Name */}
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <ChevronLeft size={28} color="#000" />
+      </TouchableOpacity>
+
       <Animated.View
         style={[
           styles.left,
@@ -50,9 +57,24 @@ const NotificationHeader = ({ unreadCount }: any) => {
           },
         ]}
       >
-        <Text style={[styles.name, { fontFamily: Fonts.figtree.semibold }]}>
-          Notifications
-        </Text>
+        <View style={styles.titleContainer}>
+          <Text style={[styles.name, { fontFamily: Fonts.figtree.semibold }]}>
+            Notifications
+          </Text>
+          {unreadCount > 0 && (
+            <View style={styles.unreadBadge}>
+              <Text
+                style={[
+                  styles.unreadBadgeText,
+                  { fontFamily: Fonts.figtree.semibold },
+                ]}
+              >
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </Text>
+            </View>
+          )}
+        </View>
+
         <Text
           style={[styles.description, { fontFamily: Fonts.figtree.regular }]}
         >
@@ -60,35 +82,10 @@ const NotificationHeader = ({ unreadCount }: any) => {
         </Text>
       </Animated.View>
 
-      {unreadCount > 0 && (
-        <View style={styles.unreadBadge}>
-          <Text
-            style={[
-              styles.unreadBadgeText,
-              { fontFamily: Fonts.figtree.semibold },
-            ]}
-          >
-            {unreadCount}
-          </Text>
-        </View>
-      )}
-
-      {/* RIGHT: Search */}
-      <View
-        style={{
-          width: 50,
-          height: 50,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#fff",
-          borderRadius: 50,
-          borderRightWidth: 0.4,
-          borderRightColor: "#99999972",
-          marginLeft: 8,
-        }}
-      >
+      {/* RIGHT: Clear All Button */}
+      <View style={styles.rightButton}>
         <Pressable onPress={handleClearNotifications}>
-          <Trash2Icon size={20} />
+          <Trash2Icon size={20} color="#1a1a1a" />
         </Pressable>
       </View>
     </View>
@@ -105,93 +102,63 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   left: {
-    flex: 1, // 👈 THIS is critical
+    flex: 1,
     flexDirection: "column",
     alignItems: "flex-start",
   },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center", // ✅ Centers badge vertically with text
+    gap: 8, // Space between title and badge
+  },
   name: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "600",
     color: "#1a1a1a",
     letterSpacing: -0.5,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
     color: "#1a1a1a83",
     letterSpacing: -0.5,
+    marginTop: 2,
   },
-
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  inputWrapper: {
-    height: 44,
-    borderRadius: 22,
+  backButton: {
+    marginRight: 16,
     backgroundColor: "#fff",
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    padding: 8,
+    borderRadius: 40,
+    borderWidth: 0.5,
+    borderColor: "#d9d9d975",
+    elevation: 1,
   },
-
-  searchInner: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    position: "relative",
-  },
-
-  input: {
-    flex: 1,
+  rightButton: {
+    width: 44,
     height: 44,
-    fontSize: 15,
-    color: "#1c1c1c",
-    padding: 0,
-    margin: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    borderRadius: 40,
+    borderWidth: 0.5,
+    borderColor: "#d9d9d975",
     marginLeft: 8,
-    backgroundColor: "transparent",
+    elevation: 1,
   },
-
-  clearButton: {
-    padding: 4,
-    marginLeft: 4,
-  },
-
-  clearText: {
-    fontSize: 14,
-    color: "#999",
-    fontWeight: "500",
-  },
-
-  cancelButton: {
-    paddingHorizontal: 8,
-  },
-
-  cancelText: {
-    fontSize: 15,
-    color: "#007aff",
-    fontWeight: "500",
-  },
-
   unreadBadge: {
     backgroundColor: "#ff3a30",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    minWidth: 24,
+    minWidth: 16, // ✅ Minimum width
+    height: 20, // ✅ Fixed height (was 28 before, had 15/28)
+    borderRadius: 24, // ✅ Perfect circle (half of height)
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8, // ✅ Padding for larger numbers
   },
   unreadBadgeText: {
     fontSize: 12,
     color: "#fff",
     fontWeight: "600",
+    textAlign: "center",
   },
 });
 

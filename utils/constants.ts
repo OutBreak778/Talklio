@@ -48,7 +48,8 @@ export const chatData = [
     message: "Hey, did you check the latest design?",
     time: "9:00 AM",
     unread: 2,
-    src: require("@/assets/images/image-1.jpg"),
+    src: require("@/assets/images/image-2.jpg"),
+    isOnline: true,
   },
   {
     id: "2",
@@ -56,7 +57,8 @@ export const chatData = [
     message: "Meeting rescheduled to 4 PM",
     time: "9:00 AM",
     unread: 0,
-    src: require("@/assets/images/image-2.jpg"),
+    src: require("@/assets/images/image-1.jpg"),
+    isOnline: false,
   },
   {
     id: "3",
@@ -64,7 +66,8 @@ export const chatData = [
     message: "Can you share the report?",
     time: "9:00 AM",
     unread: 1,
-    src: require("@/assets/images/image-3.jpg"),
+    src: require("@/assets/images/images.png"),
+    isOnline: true,
   },
   {
     id: "4",
@@ -72,7 +75,8 @@ export const chatData = [
     message: "Thanks for the update!",
     time: "9:00 AM",
     unread: 0,
-    src: require("@/assets/images/images.png"),
+    src: require("@/assets/images/image-3.jpg"),
+    isOnline: true,
   },
   {
     id: "5",
@@ -80,7 +84,8 @@ export const chatData = [
     message: "Hey, did you check the latest design?",
     time: "9:00 AM",
     unread: 2,
-    src: require("@/assets/images/image-1.jpg"),
+    src: require("@/assets/images/image-2.jpg"),
+    isOnline: true,
   },
   {
     id: "6",
@@ -88,7 +93,8 @@ export const chatData = [
     message: "Meeting rescheduled to 4 PM",
     time: "9:00 AM",
     unread: 0,
-    src: require("@/assets/images/image-2.jpg"),
+    src: require("@/assets/images/image-1.jpg"),
+    isOnline: false,
   },
   {
     id: "7",
@@ -97,6 +103,7 @@ export const chatData = [
     time: "9:00 AM",
     unread: 1,
     src: require("@/assets/images/image-3.jpg"),
+    isOnline: false,
   },
   {
     id: "8",
@@ -105,6 +112,7 @@ export const chatData = [
     time: "9:00 AM",
     unread: 0,
     src: require("@/assets/images/images.png"),
+    isOnline: true,
   },
   {
     id: "9",
@@ -113,6 +121,7 @@ export const chatData = [
     time: "9:00 AM",
     unread: 1,
     src: require("@/assets/images/image-3.jpg"),
+    isOnline: false,
   },
   {
     id: "10",
@@ -121,6 +130,7 @@ export const chatData = [
     time: "9:00 AM",
     unread: 0,
     src: require("@/assets/images/images.png"),
+    isOnline: true,
   },
 ];
 

@@ -68,13 +68,18 @@ export default function Chat() {
     setActiveFilter(chip.label.toLowerCase());
   };
 
-  const openChatRoom = (chatId: string, chatName: string) => {
+  const openChatRoom = (
+    chatId: string,
+    chatName: string,
+    chatImage: string,
+  ) => {
     // Navigate to the full-screen chat room (outside tabs)
     router.push({
-      pathname: "/(root)/[chat]",
+      pathname: "/(root)/(chat)/chat/[id]",
       params: {
         chat: chatId,
         chatName: chatName,
+        chatImage: chatImage,
       },
     });
   };
@@ -117,9 +122,9 @@ export default function Chat() {
             >
               All conversations
             </Text>
-            <Text style={[styles.seeAll, { fontFamily: Fonts.figtree.medium }]}>
+            {/* <Text style={[styles.seeAll, { fontFamily: Fonts.figtree.medium }]}>
               See All
-            </Text>
+            </Text> */}
           </View>
 
           <View style={styles.chatContainer}>
@@ -130,11 +135,17 @@ export default function Chat() {
                   styles.chatItem,
                   pressed && styles.chatItemPressed,
                 ]}
-                onPress={() => openChatRoom(item.id, item.name)}
+                onPress={() => openChatRoom(item.id, item.name, item.src)}
               >
                 <View style={styles.chatAvatar}>
                   <Image source={item.src} style={styles.avatarImage} />
-                  {item.unread > 0 && <View style={styles.activeDot} />}
+                  <View
+                    style={
+                      item.isOnline === true
+                        ? styles.activeDot
+                        : styles.nonActiveDot
+                    }
+                  />
                 </View>
 
                 <View style={styles.chatInfo}>
@@ -310,12 +321,23 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     position: "absolute",
-    bottom: 2,
-    right: 2,
+    bottom: 4,
+    right: 4,
     width: 12,
     height: 12,
     borderRadius: 6,
     backgroundColor: "#10b981",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  nonActiveDot: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#bebdbdf3",
     borderWidth: 2,
     borderColor: "#fff",
   },

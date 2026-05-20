@@ -24,15 +24,6 @@ export default function RootLayout() {
 
       {/* Main App Group - This covers everything inside (root) */}
       <Stack.Screen name="(root)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="chat-room"
-        options={{
-          headerShown: false,
-          gestureEnabled: true, // Re-enable swipe back gesture
-          presentation: "card",
-          animation: "slide_from_right",
-        }}
-      />
     </Stack>
   );
 }

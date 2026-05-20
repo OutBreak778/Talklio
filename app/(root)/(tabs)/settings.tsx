@@ -3,7 +3,7 @@ import { disconnectSocket } from "@/socket/socket";
 import { useAuthStore } from "@/store/authStore";
 import Fonts from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import {
   Bell,
   Calendar,
@@ -46,6 +46,7 @@ export default function Settings() {
   const { logout, isLoading } = useAuthStore();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+  const router = useRouter();
 
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -71,7 +72,7 @@ export default function Settings() {
         {
           label: "Personal Information",
           icon: <User size={18} color="#666" />,
-          route: "Profile",
+          route: "personal-information",
           value: userData.name,
         },
         {
@@ -90,7 +91,7 @@ export default function Settings() {
           label: "Location",
           icon: <MapPin size={18} color="#666" />,
           route: "Location",
-          value: "New York, USA",
+          value: "Maharashtra, India",
         },
       ],
     },
@@ -257,9 +258,7 @@ export default function Settings() {
       <TouchableOpacity
         style={styles.settingItem}
         onPress={() => {
-          if (item.route) {
-            console.log(`Navigate to ${item.route}`);
-          }
+          router.push(item.route);
         }}
       >
         <View style={styles.settingItemLeft}>

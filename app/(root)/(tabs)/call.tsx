@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
 
   // Chips Wrapper - Same as Chat
   chipsWrapper: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     marginBottom: 8,
   },
 

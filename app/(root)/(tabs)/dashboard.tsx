@@ -29,14 +29,20 @@ export default function dashboard() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const openChatRoom = (chatId: string, chatName: string) => {
-    // Navigate to the full-screen chat room (outside tabs)
     router.push({
-      pathname: "/(root)/[chat]",
+      pathname: "/(root)/(chat)/chat/[id]",
       params: {
         chat: chatId,
         chatName: chatName,
       },
     });
+  };
+
+  const handleTasks = () => {
+    router.push("/(root)/(dashboard)/tasks");
+  };
+  const handleNotes = () => {
+    router.push("/(root)/(dashboard)/notes");
   };
 
   return (
@@ -425,6 +431,7 @@ export default function dashboard() {
                   shadowRadius: 6,
                   elevation: 2,
                 }}
+                onPress={handleTasks}
               >
                 <Image
                   source={require("@/assets/icons/add.png")}
@@ -549,6 +556,7 @@ export default function dashboard() {
                   shadowRadius: 6,
                   elevation: 2,
                 }}
+                onPress={handleNotes}
               >
                 <Image
                   source={require("@/assets/icons/add.png")}
@@ -706,7 +714,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingBottom: 100, // extra space at bottom
+    paddingBottom: 88, // extra space at bottom
   },
 
   // 1. Welcome

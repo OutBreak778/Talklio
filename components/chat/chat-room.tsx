@@ -1,25 +1,23 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   StatusBar,
   StyleSheet,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatRoomHeader from "./chat-room-header";
 import MessageBubble from "./message-bubble";
-import MessageInput from "./message-input";
+import { MessageInput } from "./message-input";
 
 interface Message {
-  id: string;
-  text: string;
-  isUser: boolean;
-  timestamp: string;
+  id: any;
+  text: string | string[];
+  isUser?: boolean;
+  timestamp?: string;
 }
 
 const HARDCODED_MESSAGES: Message[] = [
@@ -27,22 +25,62 @@ const HARDCODED_MESSAGES: Message[] = [
   { id: "2", text: "I am good, thanks!", isUser: true, timestamp: "10:31 AM" },
   {
     id: "3",
-    text: "What are you doing?",
+    text: "What are you doing!",
     isUser: false,
     timestamp: "10:32 AM",
   },
   {
     id: "4",
-    text: "Working on the chat app",
+    text: "Are you Free Today?",
+    isUser: false,
+    timestamp: "10:33 AM",
+  },
+  {
+    id: "5",
+    text: "No, Actually i am Working on the chat app",
     isUser: true,
     timestamp: "10:33 AM",
   },
 ];
 
-export default function ChatRoom() {
+export default function ChatRoom({ id, text }: Message) {
   const [messages, setMessages] = useState<Message[]>(HARDCODED_MESSAGES);
   const [inputText, setInputText] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const insets = useSafeAreaInsets();
+  const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+
+        // Force scroll to bottom when keyboard opens
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      },
+    );
+
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+
+        // Optional: scroll to bottom when keyboard closes
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      },
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
 
   const sendMessage = () => {
     if (!inputText.trim()) return;
@@ -59,52 +97,61 @@ export default function ChatRoom() {
 
     setMessages((prev) => [...prev, newMessage]);
     setInputText("");
+
+    // Scroll to bottom after sending
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor="transparent"
-          translucent
-        />
-        <LinearGradient
-          colors={["#a5d6f039", "#fff", "#fbeee521", "#93d9f953"]}
-          start={{ x: 0.0, y: 0.0 }}
-          end={{ x: 1.0, y: 1.0 }}
-          style={StyleSheet.absoluteFillObject}
-        />
-        {/* Header */}
-        <ChatRoomHeader name="John Doe" isOnline={true} />
-        {/* Messages List */}
-        <FlatList
-          data={messages}
-          renderItem={({ item }) => (
-            <MessageBubble
-              text={item.text}
-              isUser={item.isUser}
-              timestamp={item.timestamp}
-            />
-          )}
-          keyExtractor={(item) => item.id}
-          style={styles.messagesList}
-          contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
-        />
-        {/* Input Area with KeyboardAvoidingView */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-        >
-          <MessageInput
-            value={inputText}
-            onChangeText={setInputText}
-            onSend={sendMessage}
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
+      <LinearGradient
+        colors={["#a5d6f039", "#fff", "#fbeee521", "#93d9f953"]}
+        start={{ x: 0.0, y: 0.0 }}
+        end={{ x: 1.0, y: 1.0 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+
+      <ChatRoomHeader name="John Doe" isOnline={true} />
+
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        renderItem={({ item }) => (
+          <MessageBubble
+            text={item.text}
+            isUser={item.isUser}
+            timestamp={item.timestamp}
           />
-        </KeyboardAvoidingView>
+        )}
+        keyExtractor={(item) => item.id}
+        style={styles.messagesList}
+        contentContainerStyle={[
+          styles.messagesContent,
+          { paddingBottom: keyboardHeight + 80 },
+        ]}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      />
+
+      {/* Simple View - No animations */}
+      <View style={{ marginBottom: keyboardHeight }}>
+        <MessageInput
+          value={inputText}
+          onChangeText={setInputText}
+          onSend={sendMessage}
+          keyboardVisible={keyboardHeight > 0}
+        />
       </View>
-    </TouchableWithoutFeedback>
+    </View>
   );
 }
 
@@ -112,6 +159,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
+  },
+  keyboardAvoidView: {
+    width: "100%",
+  },
+  inputWrapper: {
+    width: "100%",
+    backgroundColor: "transparent",
   },
   header: {
     flexDirection: "row",

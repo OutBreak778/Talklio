@@ -1,11 +1,5 @@
-import {
-  AudioLines,
-  Files,
-  Image,
-  Plus,
-  Send
-} from "lucide-react-native";
-import React, { useState } from "react";
+import { AudioLines, Files, Image, Plus, Send } from "lucide-react-native";
+import React, { forwardRef, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -18,94 +12,101 @@ interface MessageInputProps {
   value: string;
   onChangeText: (text: string) => void;
   onSend: () => void;
+  keyboardVisible?: boolean;
 }
 
-export default function MessageInput({
-  value,
-  onChangeText,
-  onSend,
-}: MessageInputProps) {
-  const [activeButton, setActiveButton] = useState<string>("file");
+export const MessageInput = forwardRef<TextInput, MessageInputProps>(
+  ({ value, onChangeText, onSend, keyboardVisible }, ref) => {
+    const [activeButton, setActiveButton] = useState<string>("file");
+    const [inputHeight, setInputHeight] = useState(40);
 
-  const actionButtons = [
-    { id: "file", icon: Files, label: "Files" },
-    { id: "image", icon: Image, label: "Images" },
-    { id: "audio", icon: AudioLines, label: "Audio" },
-    { id: "plus", icon: Plus, label: "More" },
-  ];
+    const actionButtons = [
+      { id: "file", icon: Files, label: "Files" },
+      { id: "image", icon: Image, label: "Images" },
+      { id: "audio", icon: AudioLines, label: "Audio" },
+      { id: "plus", icon: Plus, label: "More" },
+    ];
 
-  return (
-    <View style={styles.container}>
-      {/* Row 1: Input with overlapping Send button */}
-      <View style={styles.inputRow}>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message..."
-            placeholderTextColor="#9CA3AF"
-            value={value}
-            onChangeText={onChangeText}
-            multiline
-            numberOfLines={5}
-            maxLength={500}
-            textAlignVertical="top"
-          />
-          <TouchableOpacity
-            onPress={onSend}
-            style={[
-              styles.sendButton,
-              !value.trim() && styles.sendButtonDisabled,
-            ]}
-            disabled={!value.trim()}
-          >
-            <Send size={20} color="#FFFFFF" />
-          </TouchableOpacity>
+    return (
+      <View
+        style={[styles.container, keyboardVisible && { paddingBottom: 12 }]}
+      >
+        {/* Row 1: Input with Send button */}
+        <View style={styles.inputRow}>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              ref={ref}
+              style={[
+                styles.input,
+                { height: Math.min(100, Math.max(40, inputHeight)) },
+              ]}
+              placeholder="Type a message..."
+              placeholderTextColor="#9CA3AF"
+              value={value}
+              onChangeText={onChangeText}
+              multiline
+              numberOfLines={4}
+              maxLength={500}
+              textAlignVertical="center"
+              onContentSizeChange={(event) => {
+                setInputHeight(event.nativeEvent.contentSize.height);
+              }}
+            />
+            <TouchableOpacity
+              onPress={onSend}
+              style={[
+                styles.sendButton,
+                !value.trim() && styles.sendButtonDisabled,
+              ]}
+              disabled={!value.trim()}
+            >
+              <Send size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Row 2: Action Buttons */}
+        <View style={styles.actionsRow}>
+          {actionButtons.map((button) => {
+            const Icon = button.icon;
+            const isActive = activeButton === button.id;
+
+            return (
+              <TouchableOpacity
+                key={button.id}
+                style={[
+                  styles.actionButton,
+                  isActive && styles.actionButtonActive,
+                ]}
+                onPressIn={() => setActiveButton(button.id)}
+                activeOpacity={1}
+              >
+                <Icon
+                  size={20}
+                  color={isActive ? "#FFFFFF" : "#707070"}
+                  strokeWidth={2}
+                />
+                <Text
+                  style={[
+                    styles.actionLabel,
+                    isActive && styles.actionLabelActive,
+                  ]}
+                >
+                  {button.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
-
-      {/* Row 2: Action Buttons */}
-      <View style={styles.actionsRow}>
-        {actionButtons.map((button) => {
-          const Icon = button.icon;
-          const isActive = activeButton === button.id;
-
-          return (
-            <TouchableOpacity
-              key={button.id}
-              style={[
-                styles.actionButton,
-                isActive && styles.actionButtonActive,
-              ]}
-              onPressIn={() => setActiveButton(button.id)}
-              activeOpacity={1}
-            >
-              <Icon
-                size={20}
-                color={isActive ? "#FFFFFF" : "#6B7280"}
-                strokeWidth={2}
-              />
-              <Text
-                style={[
-                  styles.actionLabel,
-                  isActive && styles.actionLabelActive,
-                ]}
-              >
-                {button.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#FFFFFF",
     paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
   },
   inputRow: {
     paddingHorizontal: 12,
@@ -118,14 +119,15 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 24,
-    paddingHorizontal: 16,
+    borderRadius: 12,
+    paddingHorizontal: 10,
     paddingVertical: 18,
     paddingRight: 56,
     fontSize: 16,
     maxHeight: 120,
     backgroundColor: "#F9FAFB",
     textAlignVertical: "top",
+    marginTop: 4,
   },
   sendButton: {
     position: "absolute",
@@ -154,12 +156,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     borderRadius: 24,
     backgroundColor: "#F3F4F6",
     gap: 8,
     minWidth: 70,
     justifyContent: "center",
+    borderWidth: 0.61,
+    borderColor: "#dad9d999",
   },
   actionButtonActive: {
     backgroundColor: "#000000",

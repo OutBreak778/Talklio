@@ -1,3 +1,5 @@
+import { chatData } from "@/utils/constants";
+import { useLocalSearchParams } from "expo-router";
 import { CheckCheck } from "lucide-react-native";
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
@@ -19,6 +21,10 @@ export default function MessageBubble({
   isDelivered = true,
   isRead = false,
 }: MessageBubbleProps) {
+  const { chat } = useLocalSearchParams();
+  const chatId = Array.isArray(chat) ? chat[0] : chat;
+  const chatItem = chatData.find((item) => item.id === chatId);
+
   return (
     <View
       style={[

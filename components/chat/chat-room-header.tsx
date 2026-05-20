@@ -1,28 +1,29 @@
-import { router } from "expo-router";
+import { chatData } from "@/utils/constants";
+import { router, useLocalSearchParams } from "expo-router";
 import {
-    Ban,
-    BellOff,
-    ChevronLeft,
-    EllipsisVertical,
-    EyeOff,
-    Flag,
-    ImageIcon,
-    Info,
-    Layout,
-    Lock,
-    Search,
-    Timer,
-    Trash2,
+  Ban,
+  BellOff,
+  ChevronLeft,
+  EllipsisVertical,
+  EyeOff,
+  Flag,
+  ImageIcon,
+  Info,
+  Layout,
+  Lock,
+  Search,
+  Timer,
+  Trash2,
 } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
-    Image,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Image,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
 interface ChatRoomHeaderProps {
@@ -41,6 +42,10 @@ export default function ChatRoomHeader({
   const [showMenu, setShowMenu] = useState(false);
   const menuPosition = useRef({ x: 0, y: 0 });
   const [isIncognito, setIsIncognito] = useState(false);
+  const { chat, chatName, chatImage } = useLocalSearchParams();
+
+  const chatId = Array.isArray(chat) ? chat[0] : chat;
+  const chatItem = chatData.find((item) => item.id === chatId);
 
   const handleMenuPress = () => {
     setShowMenu(!showMenu);
@@ -65,7 +70,7 @@ export default function ChatRoomHeader({
       </TouchableOpacity>
       <View style={styles.chatAvatar}>
         <Image
-          source={require("@/assets/images/image-1.jpg")}
+          source={chatItem?.src}
           style={{ width: 40, height: 40, borderRadius: 50, marginRight: 8 }}
         />
         <View
@@ -76,19 +81,22 @@ export default function ChatRoomHeader({
             width: 12,
             height: 12,
             borderRadius: 6,
-            backgroundColor: isOnline ? "#10b981" : "transparent",
+            backgroundColor: chatItem?.isOnline ? "#10b981" : "transparent",
             borderWidth: 2,
-            borderColor: "#fff",
+            borderColor: chatItem?.isOnline ? "#fff" : "transparent",
           }}
         />
       </View>
 
       <View style={styles.headerInfo}>
-        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.name}>{chatName}</Text>
         <Text
-          style={[styles.status, isOnline ? styles.online : styles.offline]}
+          style={[
+            styles.status,
+            chatItem?.isOnline ? styles.online : styles.offline,
+          ]}
         >
-          {isOnline ? "Online" : "Offline"}
+          {chatItem?.isOnline === true ? "Online" : "Offline"}
         </Text>
       </View>
 
@@ -241,6 +249,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.6,
     borderBottomColor: "#E5E7EB",
     backgroundColor: "transparent",
+    zIndex: 10,
   },
   chatAvatar: {
     width: 48,

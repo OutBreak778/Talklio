@@ -57,51 +57,6 @@ const SettingHeader = ({ unreadCount }: any) => {
         </Text>
       </Animated.View>
 
-      {/* RIGHT: Search */}
-      {/* <View style={[styles.searchContainer]}>
-          <Animated.View
-            style={[
-              styles.inputWrapper,
-              { width: inputWidth, alignSelf: "flex-end" },
-            ]}
-          >
-            <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
-              <View style={styles.searchInner}>
-                <Search
-                  size={18}
-                  color={isFocused || searchText ? "#999" : "#999"}
-                />
-                <TextInput
-                  ref={inputRef}
-                  style={styles.input}
-                  placeholder={isFocused ? "Search..." : "Search"}
-                  placeholderTextColor="#bbb"
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  onBlur={handleBlur}
-                  onFocus={handleFocus}
-                />
-                {searchText.length > 0 && (
-                  <TouchableOpacity
-                    onPress={handleClear}
-                    style={styles.clearButton}
-                  >
-                    <Text style={styles.clearText}>✕</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-          </Animated.View>
-
-          {isFocused && (
-            <TouchableOpacity
-              onPress={handleCancel}
-              style={styles.cancelButton}
-            >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-          )}
-        </View> */}
       <TouchableOpacity
         style={{
           width: 50,

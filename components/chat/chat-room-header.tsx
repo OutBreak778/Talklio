@@ -1,5 +1,4 @@
-import { chatData } from "@/utils/constants";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Ban,
   BellOff,
@@ -15,7 +14,7 @@ import {
   Timer,
   Trash2,
 } from "lucide-react-native";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -27,25 +26,44 @@ import {
 } from "react-native";
 
 interface ChatRoomHeaderProps {
-  name: string;
-  isOnline?: boolean;
   onCallPress?: () => void;
   onVideoPress?: () => void;
+  image?: any;
+  id?: string;
+  isOnline?: boolean;
+  chatName?: any;
 }
 
 export default function ChatRoomHeader({
-  name,
-  isOnline = true,
   onCallPress,
   onVideoPress,
+  image,
+  id,
+  isOnline = false,
+  chatName,
 }: ChatRoomHeaderProps) {
-  const [showMenu, setShowMenu] = useState(false);
-  const menuPosition = useRef({ x: 0, y: 0 });
-  const [isIncognito, setIsIncognito] = useState(false);
-  const { chat, chatName, chatImage } = useLocalSearchParams();
+  const router = useRouter();
+  const params = useLocalSearchParams();
 
-  const chatId = Array.isArray(chat) ? chat[0] : chat;
-  const chatItem = chatData.find((item) => item.id === chatId);
+  // Safely extract params - use props first, then fallback to params
+  const finalId = id || (Array.isArray(params.id) ? params.id[0] : params.id);
+  const finalChatName =
+    chatName ||
+    (Array.isArray(params.chatName)
+      ? params.chatName[0]
+      : params.chatName || "Chat");
+  const finalChatImage =
+    image ||
+    (Array.isArray(params.chatImage) ? params.chatImage[0] : params.chatImage);
+  const finalIsOnline =
+    isOnline !== undefined
+      ? isOnline
+      : Array.isArray(params.isOnline)
+        ? params.isOnline[0] === "true"
+        : params.isOnline === "true";
+
+  const [showMenu, setShowMenu] = useState(false);
+  const [isIncognito, setIsIncognito] = useState(false);
 
   const handleMenuPress = () => {
     setShowMenu(!showMenu);
@@ -62,6 +80,28 @@ export default function ChatRoomHeader({
       console.log("Settings");
     }
   };
+  const getDisplayImage = () => {
+    if (typeof finalChatImage === "object" && finalChatImage.uri) {
+      return finalChatImage;
+    }
+    if (
+      typeof finalChatImage === "string" &&
+      finalChatImage.startsWith("http")
+    ) {
+      return { uri: finalChatImage };
+    }
+    return require("@/assets/images/image-3.jpg");
+  };
+  const handleRoomInfo = () => {
+    router.push({
+      pathname: "/(root)/(profile)/[id]",
+      params: {
+        id: id as string,
+        name: chatName,
+        avatar: typeof finalChatImage === "string" ? finalChatImage : "",
+      },
+    });
+  };
 
   return (
     <View style={styles.header}>
@@ -70,8 +110,9 @@ export default function ChatRoomHeader({
       </TouchableOpacity>
       <View style={styles.chatAvatar}>
         <Image
-          source={chatItem?.src}
+          source={getDisplayImage()}
           style={{ width: 40, height: 40, borderRadius: 50, marginRight: 8 }}
+          defaultSource={require("@/assets/images/image-3.jpg")}
         />
         <View
           style={{
@@ -81,9 +122,9 @@ export default function ChatRoomHeader({
             width: 12,
             height: 12,
             borderRadius: 6,
-            backgroundColor: chatItem?.isOnline ? "#10b981" : "transparent",
+            backgroundColor: finalIsOnline ? "#10b981" : "transparent",
             borderWidth: 2,
-            borderColor: chatItem?.isOnline ? "#fff" : "transparent",
+            borderColor: finalIsOnline ? "#fff" : "transparent",
           }}
         />
       </View>
@@ -93,10 +134,10 @@ export default function ChatRoomHeader({
         <Text
           style={[
             styles.status,
-            chatItem?.isOnline ? styles.online : styles.offline,
+            finalIsOnline ? styles.online : styles.offline,
           ]}
         >
-          {chatItem?.isOnline === true ? "Online" : "Offline"}
+          {finalIsOnline === true ? "Online" : "Offline"}
         </Text>
       </View>
 
@@ -120,10 +161,7 @@ export default function ChatRoomHeader({
           </TouchableWithoutFeedback>
           <View style={styles.dropdownMenu}>
             {/* Contact Info */}
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleMenuAction("contactInfo")}
-            >
+            <TouchableOpacity style={styles.menuItem} onPress={handleRoomInfo}>
               <Info size={18} color="#1a1a1a" />
               <Text style={styles.menuText}>Contact info</Text>
             </TouchableOpacity>

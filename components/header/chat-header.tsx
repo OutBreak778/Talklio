@@ -19,18 +19,22 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const MAX_WIDTH = SCREEN_WIDTH;
 const MIN_WIDTH = 150;
 
-const ChatHeader = ({ isFocused, setIsFocused }: any) => {
-  const [searchText, setSearchText] = useState("");
+const ChatHeader = ({
+  isFocused,
+  setIsFocused,
+  searchText,
+  setSearchText,
+}: {
+  isFocused: boolean;
+  setIsFocused: (focused: boolean) => void;
+  searchText: string;
+  setSearchText: (text: string) => void;
+}) => {
   const inputWidth = useRef(new Animated.Value(150)).current;
   const inputRef = useRef<RNTextInput>(null);
   const chatTranslateX = useRef(new Animated.Value(0)).current;
   const chatOpacity = useRef(new Animated.Value(1)).current;
   const [showMenu, setShowMenu] = useState(false);
-  const menuPosition = useRef({ x: 0, y: 0 });
-
-  const handleMenuPress = () => {
-    setShowMenu(!showMenu);
-  };
   useEffect(() => {
     if (isFocused) {
       Animated.parallel([

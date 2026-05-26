@@ -1,4 +1,5 @@
 import DashboardHeader from "@/components/header/dashboard-header";
+import { useUserStore } from "@/store/userStore";
 import Fonts from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -11,11 +12,12 @@ import {
   NotepadText,
   Phone,
 } from "lucide-react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -28,14 +30,34 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function dashboard() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const openChatRoom = (chatId: string, chatName: string) => {
+  const { users, fetchAllUsers } = useUserStore();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch users with search (Server-side + Client-side)
+  useEffect(() => {
+    fetchAllUsers();
+  }, [fetchAllUsers]);
+
+  const openChatRoom = (
+    chatId: string,
+    chatName: string,
+    chatImage: string,
+  ) => {
+    // Navigate to the full-screen chat room (outside tabs)
     router.push({
       pathname: "/(root)/(chat)/chat/[id]",
       params: {
-        chat: chatId,
+        id: chatId,
         chatName: chatName,
+        chatImage: chatImage,
       },
     });
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAllUsers();
+    setRefreshing(false);
   };
 
   const handleTasks = () => {
@@ -66,6 +88,14 @@ export default function dashboard() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#3b82f6"]}
+            tintColor="#3b82f6"
+          />
+        }
       >
         {/* 1. Welcome Section */}
         <View style={styles.welcomeSection}>
@@ -589,40 +619,7 @@ export default function dashboard() {
 
           <View style={styles.chatContainer}>
             <FlatList
-              data={[
-                {
-                  id: "1",
-                  name: "Rahul Sharma",
-                  message: "Hey, did you check the design?",
-                  time: "9:00 AM",
-                  unread: 2,
-                  src: require("@/assets/images/image-1.jpg"),
-                },
-                {
-                  id: "2",
-                  name: "Priya Patel",
-                  message: "Meeting rescheduled to 4 PM",
-                  time: "9:00 AM",
-                  unread: 0,
-                  src: require("@/assets/images/image-2.jpg"),
-                },
-                {
-                  id: "3",
-                  name: "Amit Kumar",
-                  message: "Can you share the report?",
-                  time: "9:00 AM",
-                  unread: 1,
-                  src: require("@/assets/images/image-3.jpg"),
-                },
-                {
-                  id: "4",
-                  name: "Sneha Gupta",
-                  message: "Thanks for the update!",
-                  time: "9:00 AM",
-                  unread: 0,
-                  src: require("@/assets/images/images.png"),
-                },
-              ]}
+              data={users.slice(0, 4)}
               keyExtractor={(item) => item.id}
               scrollEnabled={false} // Important: disable scrolling inside ScrollView
               renderItem={({ item }) => (
@@ -632,11 +629,14 @@ export default function dashboard() {
                     styles.chatItem,
                     pressed && styles.chatItemPressed,
                   ]}
-                  onPress={() => openChatRoom(item.id, item.name)}
+                  onPress={() => openChatRoom(item.id, item.name, item.src)}
                 >
                   <View style={styles.chatItem}>
                     <View style={styles.chatAvatar}>
-                      <Image source={item.src} style={styles.avatarImage} />
+                      <Image
+                        source={{ uri: item.src }}
+                        style={styles.avatarImage}
+                      />
                       {item.unread > 0 && <View style={styles.activeDot} />}
                     </View>
 

@@ -1,3 +1,5 @@
+import { useChatStore } from "@/store/chatStore";
+import { useUserStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -6,6 +8,7 @@ import {
   Platform,
   StatusBar,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,14 +18,26 @@ import { MessageInput } from "./message-input";
 
 interface Message {
   id: any;
-  text: string | string[];
+  text: any;
   isUser?: boolean;
   timestamp?: string;
+  image?: any;
+  isOnline?: boolean;
 }
 
 const HARDCODED_MESSAGES: Message[] = [
-  { id: "1", text: "Hey! How are you?", isUser: false, timestamp: "10:30 AM" },
-  { id: "2", text: "I am good, thanks!", isUser: true, timestamp: "10:31 AM" },
+  {
+    id: "1",
+    text: "Hey! How are you?",
+    isUser: false,
+    timestamp: "10:30 AM",
+  },
+  {
+    id: "2",
+    text: "I am good, thanks!",
+    isUser: true,
+    timestamp: "10:31 AM",
+  },
   {
     id: "3",
     text: "What are you doing!",
@@ -43,13 +58,37 @@ const HARDCODED_MESSAGES: Message[] = [
   },
 ];
 
-export default function ChatRoom({ id, text }: Message) {
+export default function ChatRoom({
+  id,
+  text,
+  image,
+  isOnline = false,
+}: Message) {
   const [messages, setMessages] = useState<Message[]>(HARDCODED_MESSAGES);
   const [inputText, setInputText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
+  const {
+    activeChat,
+    isConnecting,
+    isConnected,
+    error,
+    initializeChat,
+    clearActiveChat,
+  } = useChatStore();
+
+  const { users, fetchAllUsers } = useUserStore();
+
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
+
+  const getImageSource = () => {
+    if (image && typeof image === "string" && image.startsWith("http")) {
+      return { uri: image };
+    }
+    // Fallback to default image
+    return require("@/assets/images/image-3.jpg");
+  };
 
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
@@ -82,6 +121,16 @@ export default function ChatRoom({ id, text }: Message) {
     };
   }, []);
 
+  useEffect(() => {
+    const imageURL = typeof image === "string" ? image : "";
+    initializeChat(id, text, image, isOnline);
+    fetchAllUsers();
+
+    return () => {
+      clearActiveChat();
+    };
+  }, [id, fetchAllUsers]);
+
   const sendMessage = () => {
     if (!inputText.trim()) return;
 
@@ -93,6 +142,7 @@ export default function ChatRoom({ id, text }: Message) {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      isOnline: isOnline,
     };
 
     setMessages((prev) => [...prev, newMessage]);
@@ -103,6 +153,26 @@ export default function ChatRoom({ id, text }: Message) {
       flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
   };
+
+  // Loading state
+  // if (isConnecting) {
+  //   return (
+  //     <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
+  //       <ActivityIndicator size="large" color="#3b82f6" />
+  //       <Text style={styles.loadingText}>Connecting to chat...</Text>
+  //     </View>
+  //   );
+  // }
+
+  // // Error state
+  // if (error) {
+  //   return (
+  //     <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
+  //       <Text style={styles.errorText}>Failed to connect</Text>
+  //       <Text style={styles.errorSubText}>{error}</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -119,7 +189,12 @@ export default function ChatRoom({ id, text }: Message) {
         style={StyleSheet.absoluteFillObject}
       />
 
-      <ChatRoomHeader name="John Doe" isOnline={true} />
+      <ChatRoomHeader
+        id={id}
+        isOnline={isOnline}
+        image={getImageSource()}
+        chatName={text}
+      />
 
       <FlatList
         ref={flatListRef}
@@ -129,6 +204,8 @@ export default function ChatRoom({ id, text }: Message) {
             text={item.text}
             isUser={item.isUser}
             timestamp={item.timestamp}
+            userName={activeChat?.participantName || "User"}
+            otherUserSrc={activeChat?.participantImage} // ← Other person's avatar
           />
         )}
         keyExtractor={(item) => item.id}
@@ -140,6 +217,14 @@ export default function ChatRoom({ id, text }: Message) {
         showsVerticalScrollIndicator={true}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No messages yet</Text>
+            <Text style={styles.emptySubText}>
+              Send a message to start the conversation
+            </Text>
+          </View>
+        }
       />
 
       {/* Simple View - No animations */}
@@ -181,6 +266,47 @@ const styles = StyleSheet.create({
   },
   headerInfo: {
     flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#3b82f6",
+    fontFamily: "Figtree-Medium",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#dc2626",
+    fontFamily: "Figtree-SemiBold",
+    marginBottom: 8,
+  },
+  errorSubText: {
+    fontSize: 14,
+    color: "#666",
+    fontFamily: "Figtree-Regular",
+    textAlign: "center",
+    paddingHorizontal: 32,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 100,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+    fontFamily: "Figtree-Medium",
+    marginBottom: 8,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: "#999",
+    fontFamily: "Figtree-Regular",
   },
   headerName: {
     fontSize: 18,

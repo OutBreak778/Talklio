@@ -25,12 +25,14 @@ interface TaskHeaderProps {
   setIsFocused: any;
   placeholder?: string;
   name?: any;
+  isVisible?: boolean;
 }
 
 const TasksHeader = ({
   isFocused,
   setIsFocused,
   placeholder,
+  isVisible = true,
   name,
 }: TaskHeaderProps) => {
   const [searchText, setSearchText] = useState("");
@@ -157,52 +159,58 @@ const TasksHeader = ({
         </Animated.View>
 
         {/* RIGHT: Search */}
-        <View style={[styles.searchContainer]}>
-          <Animated.View
-            style={[
-              styles.inputWrapper,
-              { width: inputWidth, alignSelf: "flex-end" },
-            ]}
-          >
-            <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
-              <View style={styles.searchInner}>
-                <Search
-                  size={18}
-                  color={isFocused || searchText ? "#999" : "#999"}
-                />
-                <TextInput
-                  ref={inputRef}
-                  style={styles.input}
-                  placeholder={
-                    isFocused ? "Search..." : `Search ${placeholder || "Tasks"}`
-                  }
-                  placeholderTextColor="#bbb"
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  onBlur={handleBlur}
-                  onFocus={handleFocus}
-                />
-                {searchText.length > 0 && (
-                  <TouchableOpacity
-                    onPress={handleClear}
-                    style={styles.clearButton}
-                  >
-                    <Text style={styles.clearText}>✕</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-          </Animated.View>
-
-          {isFocused && (
-            <TouchableOpacity
-              onPress={handleCancel}
-              style={styles.cancelButton}
+        {isVisible && (
+          <View style={[styles.searchContainer]}>
+            <Animated.View
+              style={[
+                styles.inputWrapper,
+                { width: inputWidth, alignSelf: "flex-end" },
+              ]}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+              <TouchableWithoutFeedback
+                onPress={() => inputRef.current?.focus()}
+              >
+                <View style={styles.searchInner}>
+                  <Search
+                    size={18}
+                    color={isFocused || searchText ? "#999" : "#999"}
+                  />
+                  <TextInput
+                    ref={inputRef}
+                    style={styles.input}
+                    placeholder={
+                      isFocused
+                        ? "Search..."
+                        : `Search ${placeholder || "Tasks"}`
+                    }
+                    placeholderTextColor="#bbb"
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
+                  />
+                  {searchText.length > 0 && (
+                    <TouchableOpacity
+                      onPress={handleClear}
+                      style={styles.clearButton}
+                    >
+                      <Text style={styles.clearText}>✕</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
+            </Animated.View>
+
+            {isFocused && (
+              <TouchableOpacity
+                onPress={handleCancel}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
         {/* <View
           style={{
             width: 50,

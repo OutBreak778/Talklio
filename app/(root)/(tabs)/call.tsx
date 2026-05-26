@@ -2,6 +2,7 @@ import { ChipsList } from "@/components/call-chip-list";
 import CallHeader from "@/components/header/call-header";
 import Fonts, { callData, incomingCalls } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import {
   BellRing,
   Check,
@@ -12,6 +13,7 @@ import {
   PhoneIncoming,
   PhoneOff,
   PhoneOutgoing,
+  Users,
   Video,
   X,
 } from "lucide-react-native";
@@ -32,6 +34,7 @@ export default function Call() {
   const insets = useSafeAreaInsets();
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [isFocused, setIsFocused] = useState(false);
+  const router = useRouter();
 
   // Call categories chips
   const callChips = [
@@ -198,7 +201,10 @@ export default function Call() {
         >
           All caught up! No pending incoming calls
         </Text>
-        <TouchableOpacity style={styles.startCallButton}>
+        <TouchableOpacity
+          style={styles.startCallButton}
+          onPress={() => router.push("/(root)/(call)/call/new")}
+        >
           <PhoneCall size={18} color="#fff" />
           <Text
             style={[styles.startCallText, { fontFamily: Fonts.figtree.medium }]}
@@ -209,6 +215,28 @@ export default function Call() {
       </LinearGradient>
     </View>
   );
+
+  const handleCallPress = (item: any) => {
+    let avatarUri = "";
+
+    // Convert require() to string path
+    if (typeof item.avatar === "number") {
+      const resolved = Image.resolveAssetSource(item.avatar);
+      avatarUri = resolved?.uri || "";
+    } else {
+      avatarUri = item.avatar;
+    }
+
+    router.push({
+      pathname: "/(root)/(profile)/[id]",
+      params: {
+        id: item.id,
+        name: item.name,
+        title: item.title || "",
+        avatar: avatarUri,
+      },
+    });
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -241,6 +269,76 @@ export default function Call() {
           />
         </View>
 
+        {/* Quick Actions Grid */}
+        <View style={styles.quickActionsContainer}>
+          <View style={styles.quickActionsGrid}>
+            {/* 1. History */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.quickActionItem}
+            >
+              <View
+                style={[
+                  styles.quickActionIconContainer,
+                  { backgroundColor: "#34c75920" },
+                ]}
+              >
+                <Clock size={28} color="#1a1a1a" strokeWidth={1.8} />
+              </View>
+              <Text style={styles.quickActionLabel}>History</Text>
+            </TouchableOpacity>
+
+            {/* 2. Voice Call */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.quickActionItem}
+              onPress={() => router.push("/(root)/(call)/call/new")}
+            >
+              <View
+                style={[
+                  styles.quickActionIconContainer,
+                  { backgroundColor: "#c0deff" },
+                ]}
+              >
+                <Phone size={28} color="#1a1a1a" strokeWidth={1.8} />
+              </View>
+              <Text style={styles.quickActionLabel}>Voice</Text>
+            </TouchableOpacity>
+
+            {/* 3. Video Call */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.quickActionItem}
+            >
+              <View
+                style={[
+                  styles.quickActionIconContainer,
+                  { backgroundColor: "#deecec" },
+                ]}
+              >
+                <Video size={28} color="#1a1a1a" strokeWidth={1.8} />
+              </View>
+              <Text style={styles.quickActionLabel}>Video</Text>
+            </TouchableOpacity>
+
+            {/* 4. Contacts */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.quickActionItem}
+            >
+              <View
+                style={[
+                  styles.quickActionIconContainer,
+                  { backgroundColor: "#f8e9c8" },
+                ]}
+              >
+                <Users size={28} color="#1a1a1a" strokeWidth={1.8} />
+              </View>
+              <Text style={styles.quickActionLabel}>Contacts</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Incoming Calls Section - Height 320 */}
         <View style={styles.incomingSection}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 16 }]}>
@@ -255,13 +353,6 @@ export default function Call() {
                 Incoming calls
               </Text>
             </View>
-            {/* <TouchableOpacity>
-              <Text
-                style={[styles.seeAll, { fontFamily: Fonts.figtree.medium }]}
-              >
-                View all
-              </Text>
-            </TouchableOpacity> */}
           </View>
 
           <View style={styles.incomingContainer}>
@@ -296,13 +387,14 @@ export default function Call() {
           </View>
 
           <View style={styles.callsContainer}>
-            {callData.map((item) => (
+            {callData.slice(0, 4).map((item) => (
               <Pressable
                 key={item.id}
                 style={({ pressed }) => [
                   styles.callItem,
                   pressed && styles.callItemPressed,
                 ]}
+                onPress={() => handleCallPress(item)}
               >
                 {/* Avatar */}
                 <View style={styles.callAvatar}>
@@ -601,7 +693,7 @@ const styles = StyleSheet.create({
   },
 
   incomingSection: {
-    marginTop: 16,
+    marginTop: 12,
     marginBottom: 24,
   },
   incomingContainer: {
@@ -713,7 +805,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 1,
+    borderTopWidth: 0.4,
+    borderTopLeftRadius: 0.4,
+    borderTopRightRadius: 0.4,
+    borderTopStartRadius: 20,
+    borderTopEndRadius: 20,
+    borderTopColor: "#00000023",
   },
   emptyIncomingGradient: {
     padding: 32,
@@ -758,5 +856,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#fff",
     fontWeight: "500",
+  },
+
+  /* ==================== QUICK ACTIONS GRID ==================== */
+  quickActionsContainer: {
+    paddingHorizontal: 12,
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  quickActionsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  quickActionItem: {
+    alignItems: "center",
+    width: "23%", // ~4 equal columns
+  },
+  quickActionIconContainer: {
+    width: 58,
+    height: 58,
+    borderRadius: 18,
+    backgroundColor: "#f6f4fc",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  quickActionLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#1a1a1a",
+    textAlign: "center",
   },
 });

@@ -1,4 +1,3 @@
-// app/chat/[id].tsx
 import ChatRoom from "@/components/chat/chat-room";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
@@ -6,11 +5,19 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function ChatRoomScreen() {
-  const { id, name } = useLocalSearchParams();
+  const params = useLocalSearchParams();
 
-  // Safe extraction
-  const chatId = Array.isArray(id) ? id[0] : id || "";
-  const chatName = Array.isArray(name) ? name[0] : name || "Chat";
+  // Safely extract params
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const chatName = Array.isArray(params.chatName)
+    ? params.chatName[0]
+    : params.chatName || "Chat";
+  const chatImage = Array.isArray(params.chatImage)
+    ? params.chatImage[0]
+    : params.chatImage;
+  const isOnline = Array.isArray(params.isOnline)
+    ? params.isOnline[0] === "true"
+    : params.isOnline === "true";
 
   return (
     <View style={{ flex: 1 }}>
@@ -19,7 +26,7 @@ export default function ChatRoomScreen() {
         style={StyleSheet.absoluteFillObject}
       />
 
-      <ChatRoom id={chatId} text={chatName} />
+      <ChatRoom id={id} text={chatName} image={chatImage} isOnline={isOnline} />
     </View>
   );
 }

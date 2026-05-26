@@ -1,3 +1,4 @@
+import { useUserStore } from "@/store/userStore";
 import { chatData } from "@/utils/constants";
 import { useLocalSearchParams } from "expo-router";
 import { CheckCheck } from "lucide-react-native";
@@ -9,7 +10,8 @@ interface MessageBubbleProps {
   isUser: boolean;
   timestamp: string;
   userName?: string;
-  isDelivered?: boolean;
+  otherUserSrc?: any; // Person you're chatting with
+  myAvatarSrc?: any; // Your own avatar
   isRead?: boolean;
 }
 
@@ -17,13 +19,15 @@ export default function MessageBubble({
   text,
   isUser,
   timestamp,
-  userName = "John Doe",
-  isDelivered = true,
+  userName = "Unknown",
+  otherUserSrc,
+  myAvatarSrc,
   isRead = false,
 }: MessageBubbleProps) {
   const { chat } = useLocalSearchParams();
   const chatId = Array.isArray(chat) ? chat[0] : chat;
   const chatItem = chatData.find((item) => item.id === chatId);
+  const { users, fetchAllUsers } = useUserStore();
 
   return (
     <View
@@ -35,7 +39,13 @@ export default function MessageBubble({
       {/* Avatar for other user messages (left side) */}
       {!isUser && (
         <Image
-          source={require("@/assets/images/image-1.jpg")}
+          source={
+            otherUserSrc &&
+            typeof otherUserSrc === "string" &&
+            otherUserSrc.startsWith("http")
+              ? { uri: otherUserSrc }
+              : otherUserSrc || require("@/assets/images/image-1.jpg")
+          }
           style={styles.avatar}
         />
       )}
@@ -109,7 +119,13 @@ export default function MessageBubble({
       </View>
       {isUser && (
         <Image
-          source={require("@/assets/images/image-3.jpg")}
+          source={
+            myAvatarSrc &&
+            typeof myAvatarSrc === "string" &&
+            myAvatarSrc.startsWith("http")
+              ? { uri: myAvatarSrc }
+              : myAvatarSrc || require("@/assets/images/image-3.jpg")
+          }
           style={styles.avatar}
         />
       )}

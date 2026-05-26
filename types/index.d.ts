@@ -15,7 +15,10 @@ export type AuthState = {
   // Actions
   register: (name?: string, email: string, password: string) => Promise<void>;
   verifyOtp: (email: string, otp: string) => Promise<void>;
-  login: (emailOrPhone: string, password: string) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean } | void>;
   logout: () => void;
   clearError: () => void;
 };

@@ -45,7 +45,7 @@ export const chatData = [
   {
     id: "1",
     name: "Rahul Sharma",
-    message: "Hey, did you check the latest design?",
+    message: "Hey, did you check the design?",
     time: "9:00 AM",
     unread: 2,
     src: require("@/assets/images/image-2.jpg"),

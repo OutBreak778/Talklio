@@ -1,4 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import {
   BookOpen,
   Briefcase,
@@ -89,6 +90,7 @@ const CATEGORIES = [
 ];
 export default function Notes() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [activeChip, setActiveChip] = useState("all");
   const [notes, setNotes] = useState<Note[]>([]); // Empty by default
   const [isFocused, setIsFocused] = useState(false);
@@ -189,7 +191,11 @@ export default function Notes() {
       </View>
 
       {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.7}
+        onPress={() => router.push("/(root)/(dashboard)/add-note")}
+      >
         <Plus size={45} color="#FFFFFF" strokeWidth={1.6} />
       </TouchableOpacity>
     </View>
